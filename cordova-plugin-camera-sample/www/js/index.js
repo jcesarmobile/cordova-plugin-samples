@@ -40,6 +40,27 @@ var app = {
         receivedElement.setAttribute('style', 'display:block;');
 
         console.log('Received Event: ' + id);
+        document.getElementById('camera').addEventListener('click',function(evt){
+            app.openCamera();
+         },false);
+         document.getElementById('gallery').addEventListener('click',function(evt){
+             app.openGallery();
+         },false);
+    },
+    openCamera: function() {
+        navigator.camera.getPicture(app.onSuccess, app.onFail, { quality: 50,
+            destinationType: Camera.DestinationType.FILE_URI, sourceType: Camera.PictureSourceType.CAMERA });
+    },
+    openGallery: function() {
+        navigator.camera.getPicture(app.onSuccess, app.onFail, { quality: 50,
+            destinationType: Camera.DestinationType.FILE_URI, sourceType: Camera.PictureSourceType.PHOTOLIBRARY });
+    },
+    onSuccess: function(imageURI) {
+        var image = document.getElementById('result');
+        image.src = imageURI;
+    },
+    onFail: function(message) {
+        alert('Failed because: ' + message);
     }
 };
 
