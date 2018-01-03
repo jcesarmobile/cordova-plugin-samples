@@ -40,7 +40,38 @@ var app = {
         receivedElement.setAttribute('style', 'display:block;');
 
         console.log('Received Event: ' + id);
-    }
+        document.getElementById('get').addEventListener('click',function(evt){
+            app.getPosition();
+         },false);
+         document.getElementById('watch').addEventListener('click',function(evt){
+             app.watchPosition();
+         },false);
+         document.getElementById('clear').addEventListener('click',function(evt){
+            app.clearWatch();
+        },false);
+    },
+    getPosition: function() {
+        navigator.geolocation.getCurrentPosition(app.onSuccess, app.onFail);
+    },
+    watchPosition: function() {
+        this.watchID = navigator.geolocation.watchPosition(app.onSuccess, app.onFail, { timeout: 30000 });
+    },
+    clearWatch: function() {
+        navigator.geolocation.clearWatch(this.watchID);
+        var element = document.getElementById('geolocation');
+        element.innerHTML = "";
+    },
+    onSuccess: function(position) {
+        var element = document.getElementById('geolocation');
+        element.innerHTML = 'Latitude: '  + position.coords.latitude      + '<br />' +
+                            'Longitude: ' + position.coords.longitude     + '<br />' +
+                            '<hr />'      + element.innerHTML;
+    },
+    onFail: function(error) {
+        alert('code: '    + error.code    + '\n' +
+              'message: ' + error.message + '\n');
+    },
+    watchID: null
 };
 
 app.initialize();
