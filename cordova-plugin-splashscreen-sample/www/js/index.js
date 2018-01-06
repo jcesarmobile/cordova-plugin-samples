@@ -40,6 +40,9 @@ var app = {
         receivedElement.setAttribute('style', 'display:block;');
 
         console.log('Received Event: ' + id);
+        setTimeout(function() {
+            navigator.splashscreen.hide();
+        }, 2000);
     }
 };
 
