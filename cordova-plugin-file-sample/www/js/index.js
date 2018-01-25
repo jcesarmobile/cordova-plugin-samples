@@ -40,6 +40,65 @@ var app = {
         receivedElement.setAttribute('style', 'display:block;');
 
         console.log('Received Event: ' + id);
+        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
+            console.log('file system open: ' + dirEntry.name);
+            var isAppend = true;
+            createFile(dirEntry, "downloadedImage.jpg", isAppend);
+        }, onFSError);
+        function onFSError(error) {
+            alert(JSON.stringify(error));
+        }
+        function createFile(dirEntry, fileName, isAppend) {
+            // Creates a new file or returns the file if it already exists.
+            dirEntry.getFile(fileName, {create: true, exclusive: false}, function(fileEntry) {
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://static.vix.com/es/sites/default/files/styles/large/public/imj/3/30-cosas-de-los-gatos-que-no-sabias-3.jpg', true);
+                xhr.responseType = 'blob';
+
+                xhr.onload = function() {
+                    if (this.status == 200) {
+                        var blob = new Blob([this.response], { type: 'image/jpeg' });
+                        writeFile(fileEntry, blob);
+                    }
+                };
+                xhr.send();
+            }, onFSError);
+        }
+
+        function writeFile(fileEntry, data) {
+           // Create a FileWriter object for our FileEntry (log.txt).
+           fileEntry.createWriter(function (fileWriter) {
+
+                fileWriter.onerror = function(e) {
+                    console.log("Failed file write: " + e.toString());
+                };
+
+                function writeFinish() {
+                    function success(file) {
+                        alert("Wrote file with size: " + file.size);
+                    }
+                    function fail(error) {
+                        alert("Unable to retrieve file properties: " + error.code);
+                    }
+                    fileEntry.file(success, fail);
+                }
+                var written = 0;
+                var BLOCK_SIZE = 1*1024*1024; // write 1M every time of write
+                function writeNext(cbFinish) {
+                    fileWriter.onwrite = function(evt) {
+                        if (written < data.size)
+                            writeNext(cbFinish);
+                        else
+                            cbFinish();
+                    };
+                    if (written) fileWriter.seek(fileWriter.length);
+                    fileWriter.write(data.slice(written, written + Math.min(BLOCK_SIZE, data.size - written)));
+                    written += Math.min(BLOCK_SIZE, data.size - written);
+                }
+                writeNext(writeFinish);
+            });
+        }
     }
 };
 
